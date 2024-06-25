@@ -1,8 +1,7 @@
 from typing import Sequence, Tuple
-import torch.nn.utils.prune as pytorch_prune
-import torch.nn as nn
-import torch.nn.utils.prune as prune
 
+import torch.nn as nn
+import torch.nn.utils.prune as pytorch_prune
 
 _PARAM_TUPLE = Tuple[nn.Module, str]
 _PARAM_LIST = Sequence[_PARAM_TUPLE]
@@ -24,7 +23,7 @@ def filter_parameters_to_prune(module: nn.Module) -> _PARAM_LIST:
 
 def apply_pruning(parameters_to_prune: _PARAM_LIST, amount: float = 0.5):
     for module, name in parameters_to_prune:
-        prune.l1_unstructured(module, name, amount=amount)
+        pytorch_prune.l1_unstructured(module, name, amount=amount)
 
 
 def get_pruned_stats(module: nn.Module, name: str) -> Tuple[int, int]:
@@ -50,8 +49,8 @@ def log_sparsity_stats(parameters_to_prune: _PARAM_LIST):
         )
 
 
-def remove_pruning(module: nn.Module):
- for _, module in module.named_modules():
+def remove_pruning(model: nn.Module):
+    for _, module in model.named_modules():
         for k in list(module._forward_pre_hooks):
             hook = module._forward_pre_hooks[k]
             if isinstance(hook, pytorch_prune.BasePruningMethod):

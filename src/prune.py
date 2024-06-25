@@ -4,7 +4,6 @@ import torch.nn as nn
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-
 rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 from src.data import MNISTDataModule
@@ -37,7 +36,7 @@ train(
     criterion=criterion,
     optimizer=optimizer,
     scheduler=scheduler,
-    num_epochs=10,
+    num_epochs=2,
 )
 eval(model=model, datamodule=dm, criterion=criterion)
 amount = 0.9
@@ -49,7 +48,6 @@ for _ in range(total_steps):
     parameters_to_prune = filter_parameters_to_prune(model)
     apply_pruning(parameters_to_prune, amount=amount_per_step)
     log_sparsity_stats(parameters_to_prune)
-    remove_pruning(model)
 
     train(
         model=model,
@@ -57,6 +55,7 @@ for _ in range(total_steps):
         criterion=criterion,
         optimizer=optimizer,
         scheduler=scheduler,
-        num_epochs=5,
+        num_epochs=2,
     )
     eval(model=model, datamodule=dm, criterion=criterion)
+remove_pruning(model)
