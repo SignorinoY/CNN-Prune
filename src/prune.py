@@ -49,7 +49,7 @@ for _ in range(total_steps):
     parameters_to_prune = filter_parameters_to_prune(model)
     apply_pruning(parameters_to_prune, amount=amount_per_step)
     log_sparsity_stats(parameters_to_prune)
-    remove_pruning(parameters_to_prune)
+    remove_pruning(model)
 
     train(
         model=model,
