@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Union
 
 import torch.nn as nn
 import torch.nn.utils.prune as pytorch_prune
@@ -18,12 +18,21 @@ def filter_parameters_to_prune(module: nn.Module) -> _PARAM_LIST:
     for module, name in parameters_to_prune:
         if isinstance(module, nn.Conv2d) and name == "weight":
             _filtered_parameters_to_prune.append((module, name))
+        if isinstance(module, nn.Linear) and name == "weight":
+            _filtered_parameters_to_prune.append((module, name))
     return _filtered_parameters_to_prune
 
 
-def apply_pruning(parameters_to_prune: _PARAM_LIST, amount: float = 0.5):
-    for module, name in parameters_to_prune:
-        pytorch_prune.l1_unstructured(module, name, amount=amount)
+def apply_pruning(
+    parameters_to_prune: _PARAM_LIST, amount: float = 0.5, type: str = "unstructured"
+):
+    if type == "unstructured":
+        pytorch_prune.global_unstructured(
+            parameters_to_prune, pruning_method=pytorch_prune.L1Unstructured, amount=amount
+        )
+    elif type == "structured":
+        for module, name in parameters_to_prune:
+            pytorch_prune.ln_structured(module, name, amount=amount, dim=0, n=1)
 
 
 def get_pruned_stats(module: nn.Module, name: str) -> Tuple[int, int]:

@@ -1,0 +1,3 @@
+_target_: src.models.components.LeNet5
+num_classes: 10
+gray_scale: True

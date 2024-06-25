@@ -5,18 +5,18 @@ from torch import nn
 class LeNet5(nn.Module):
     """ "Implement the LeNet-5 architecture."""
 
-    def __init__(self, num_classes: int = 10, grayscale: bool = False) -> None:
+    def __init__(self, num_classes: int = 10, gray_scale: bool = False) -> None:
         """Initialize a `LeNet5` module.
 
         :param num_classes: The number of classes in the dataset. Defaults to `10`.
-        :param grayscale: Whether to use grayscale images. Defaults to `False`.
+        :param gray_scale: Whether to use grayscale images. Defaults to `False`.
         """
         super().__init__()
 
-        self.grayscale = grayscale
+        self.gray_scale = gray_scale
         self.num_classes = num_classes
 
-        if self.grayscale:
+        if self.gray_scale:
             in_channels = 1
         else:
             in_channels = 3

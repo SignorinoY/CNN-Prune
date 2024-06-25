@@ -4,3 +4,4 @@ from src.utils.pruning import (
     log_sparsity_stats,
     remove_pruning,
 )
+from src.utils.trainer import Trainer

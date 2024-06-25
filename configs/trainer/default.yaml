@@ -1,0 +1,10 @@
+_target_: src.utils.Trainer
+
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+
+learning_rate: 0.001
+patience: 3
+max_epochs: 2
+device: cpu
+dirpath: ${paths.output_dir}/checkpoints/

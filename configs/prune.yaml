@@ -1,0 +1,20 @@
+# @package _global_
+
+# specify here default configuration
+# order of defaults determines the order in which configs override each other
+defaults:
+  - _self_
+  - data: mnist
+  - model: lenet5
+  - trainer: default
+  - paths: default
+  - hydra: default
+
+task_name: "pre-train"
+
+seed: 42
+
+ckpt_path: logs/pre-train/runs/2024-06-25_19-59-12/checkpoints/last.pth
+prune_amount: 0.9
+prune_steps: 10
+prune_type: "unstructured"
