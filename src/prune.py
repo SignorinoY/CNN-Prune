@@ -37,7 +37,7 @@ train(
     criterion=criterion,
     optimizer=optimizer,
     scheduler=scheduler,
-    num_epochs=25,
+    num_epochs=10,
 )
 eval(model=model, datamodule=dm, criterion=criterion)
 amount = 0.9

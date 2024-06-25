@@ -1,5 +1,5 @@
 from typing import Sequence, Tuple
-
+import torch.nn.utils.prune as pytorch_prune
 import torch.nn as nn
 import torch.nn.utils.prune as prune
 
@@ -50,6 +50,10 @@ def log_sparsity_stats(parameters_to_prune: _PARAM_LIST):
         )
 
 
-def remove_pruning(parameters_to_prune: _PARAM_LIST):
-    for module, name in parameters_to_prune:
-        prune.remove(module, name)
+def remove_pruning(module: nn.Module):
+ for _, module in module.named_modules():
+        for k in list(module._forward_pre_hooks):
+            hook = module._forward_pre_hooks[k]
+            if isinstance(hook, pytorch_prune.BasePruningMethod):
+                hook.remove(module)
+                del module._forward_pre_hooks[k]
