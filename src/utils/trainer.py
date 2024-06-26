@@ -19,7 +19,7 @@ class Trainer:
         model: torch.nn.Module,
         criterion: torch.nn.Module,
         learning_rate: float = 0.001,
-        patience: int = 3,
+        patience: int = 5,
         max_epochs: int = 25,
         device: str = "cpu",
         dirpath: str = "checkpoints/",
@@ -32,8 +32,9 @@ class Trainer:
         self.criterion = criterion
         self.optimizer = torch.optim.Adam(params=self.model.parameters(), lr=learning_rate)
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer=self.optimizer, mode="min", patience=patience
+            optimizer=self.optimizer, mode="min", patience=min(patience // 2 + 1, 3)
         )
+        self.patience = patience
         self.max_epochs = max_epochs
         self.dirpath = dirpath
 
@@ -63,20 +64,23 @@ class Trainer:
 
     def training_step(self, batch):
         loss, preds, labels = self.step(batch)
-        self.train_loss(loss)
-        self.train_acc(preds, labels)
 
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
 
+        self.train_loss(loss)
+        self.train_acc(preds, labels)
+
     def validation_step(self, batch):
         loss, preds, labels = self.step(batch)
+
         self.val_loss(loss)
         self.val_acc(preds, labels)
 
     def test_step(self, batch):
         loss, preds, labels = self.step(batch)
+
         self.test_loss(loss)
         self.test_acc(preds, labels)
 
@@ -87,21 +91,24 @@ class Trainer:
         train_steps = len(datamodule.train_dataloader())
         val_steps = len(datamodule.val_dataloader())
 
+        n_epoch_no_improvement = 0
+        val_acc_best = 0
+
         train_pbar = tqdm(
             range(train_steps),
             postfix={
                 "train/loss": 0.0,
                 "train/acc": 0.0,
             },
-            leave=False,
         )
         val_pbar = tqdm(
             range(val_steps),
             postfix={
                 "val/loss": 0.0,
                 "val/acc": 0.0,
+                "val/acc_best": 0.0,
+                "no_improve": 0,
             },
-            leave=False,
         )
 
         for epoch in range(self.max_epochs):
@@ -110,41 +117,58 @@ class Trainer:
             self.model.train()
             for batch in datamodule.train_dataloader():
                 self.training_step(batch)
-
                 train_pbar.update()
-                train_pbar.set_postfix(
-                    {
-                        "train/loss": self.train_loss.compute().item(),
-                        "train/acc": self.train_acc.compute().item(),
-                    }
-                )
+
+            train_pbar.set_postfix(
+                {
+                    "train/loss": self.train_loss.compute().item(),
+                    "train/acc": self.train_acc.compute().item(),
+                }
+            )
             train_pbar.reset()
+
+            self.train_loss.reset()
+            self.train_acc.reset()
 
             val_pbar.set_description(f"{epoch + 1}/{self.max_epochs}")
             self.model.eval()
             for batch in datamodule.val_dataloader():
                 self.validation_step(batch)
-
                 val_pbar.update()
-                val_pbar.set_postfix(
-                    {
-                        "val/loss": self.val_loss.compute().item(),
-                        "val/acc": self.val_acc.compute().item(),
-                    }
-                )
+
+            val_loss = self.val_loss.compute()
+            val_acc = self.val_acc.compute()
+            self.scheduler.step(val_loss)
+            self.val_acc_best(val_acc)
+
+            if val_acc.item() > val_acc_best:
+                n_epoch_no_improvement = 0
+                self.save()
+            else:
+                n_epoch_no_improvement += 1
+            val_acc_best = self.val_acc_best.compute().item()
+
+            val_pbar.set_postfix(
+                {
+                    "val/loss": val_loss.item(),
+                    "val/acc": val_acc.item(),
+                    "val/acc_best": val_acc_best,
+                    "no_improve": n_epoch_no_improvement,
+                }
+            )
             val_pbar.reset()
+            self.val_loss.reset()
+            self.val_acc.reset()
 
-            loss = self.val_loss.compute()
-            acc = self.val_acc.compute()
-            self.val_acc_best(acc)
-
-            self.scheduler.step(loss)
+            if n_epoch_no_improvement > self.patience:
+                break
 
         train_pbar.close()
         val_pbar.close()
         datamodule.teardown(stage="fit")
 
     def test(self, datamodule: LightningDataModule):
+        self.load(os.path.join(self.dirpath, "last.pth"))
         datamodule.setup(stage="test")
         test_steps = len(datamodule.test_dataloader())
 

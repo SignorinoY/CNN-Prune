@@ -4,7 +4,7 @@ criterion:
   _target_: torch.nn.CrossEntropyLoss
 
 learning_rate: 0.001
-patience: 3
-max_epochs: 2
-device: cpu
+patience: 5
+max_epochs: 50
+device: cuda
 dirpath: ${paths.output_dir}/checkpoints/

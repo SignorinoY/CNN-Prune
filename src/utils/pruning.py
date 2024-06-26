@@ -24,15 +24,18 @@ def filter_parameters_to_prune(module: nn.Module) -> _PARAM_LIST:
 
 
 def apply_pruning(
-    parameters_to_prune: _PARAM_LIST, amount: float = 0.5, type: str = "unstructured"
+    parameters_to_prune: _PARAM_LIST, amount: float = 0.5, type: str = "global_unstructured"
 ):
-    if type == "unstructured":
+    if type == "global_unstructured":
         pytorch_prune.global_unstructured(
             parameters_to_prune, pruning_method=pytorch_prune.L1Unstructured, amount=amount
         )
+    elif type == "unstructed":
+        for module, name in parameters_to_prune:
+            pytorch_prune.l1_unstructured(module, name, amount=amount)
     elif type == "structured":
         for module, name in parameters_to_prune:
-            pytorch_prune.ln_structured(module, name, amount=amount, dim=0, n=1)
+            pytorch_prune.ln_structured(module, name, amount=amount, dim=0, n=2)
 
 
 def get_pruned_stats(module: nn.Module, name: str) -> Tuple[int, int]:

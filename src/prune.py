@@ -5,8 +5,6 @@ from omegaconf import DictConfig
 
 rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
-from src.utils import Trainer
-
 
 @hydra.main(version_base="1.3", config_path="../configs", config_name="prune.yaml")
 def main(cfg: DictConfig):
@@ -30,8 +28,6 @@ def main(cfg: DictConfig):
         trainer.prune(amount=amount_per_step, type=cfg.prune_type)
         trainer.fit(datamodule)
         print(trainer.test(datamodule))
-
-    trainer.save()
 
 
 if __name__ == "__main__":

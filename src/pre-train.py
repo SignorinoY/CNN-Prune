@@ -20,7 +20,6 @@ def main(cfg: DictConfig):
     trainer = hydra.utils.instantiate(cfg.trainer, model=model)
     trainer.fit(datamodule)
     print(trainer.test(datamodule))
-    trainer.save()
 
 
 if __name__ == "__main__":

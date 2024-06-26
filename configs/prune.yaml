@@ -4,7 +4,7 @@
 # order of defaults determines the order in which configs override each other
 defaults:
   - _self_
-  - data: mnist
+  - data: cifar10
   - model: lenet5
   - trainer: default
   - paths: default
@@ -14,7 +14,7 @@ task_name: "pre-train"
 
 seed: 42
 
-ckpt_path: logs/pre-train/runs/2024-06-25_19-59-12/checkpoints/last.pth
-prune_amount: 0.9
-prune_steps: 10
-prune_type: "unstructured"
+ckpt_path: logs/pre-train/runs/2024-06-26_04-08-33/checkpoints/last.pth
+prune_amount: 0.8415106807538887
+prune_steps: 1
+prune_type: "unstructed"
