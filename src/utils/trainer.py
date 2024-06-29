@@ -10,6 +10,7 @@ from src.utils.pruning import (
     apply_pruning,
     filter_parameters_to_prune,
     log_sparsity_stats,
+    remove_pruning
 )
 
 
@@ -190,6 +191,7 @@ class Trainer:
         parameters_to_prune = filter_parameters_to_prune(self.model)
         apply_pruning(parameters_to_prune, amount=amount, type=type)
         log_sparsity_stats(parameters_to_prune)
+        remove_pruning(self.model)
 
     def load(self, ckpt_path: str):
         self.model.load_state_dict(torch.load(ckpt_path))

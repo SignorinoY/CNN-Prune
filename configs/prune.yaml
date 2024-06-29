@@ -5,16 +5,16 @@
 defaults:
   - _self_
   - data: cifar10
-  - model: lenet5
+  - model: resnet50
   - trainer: default
   - paths: default
   - hydra: default
 
-task_name: "pre-train"
+task_name: "prune"
 
 seed: 42
 
-ckpt_path: logs/pre-train/runs/2024-06-26_04-08-33/checkpoints/last.pth
-prune_amount: 0.8415106807538887
+ckpt_path: logs/pre-train/runs/2024-06-26_07-06-44/checkpoints/last.pth
+prune_amount: 0.841510680753888
 prune_steps: 1
-prune_type: "unstructed"
+prune_type: "global_unstructured"

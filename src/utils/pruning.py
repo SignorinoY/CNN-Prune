@@ -18,8 +18,6 @@ def filter_parameters_to_prune(module: nn.Module) -> _PARAM_LIST:
     for module, name in parameters_to_prune:
         if isinstance(module, nn.Conv2d) and name == "weight":
             _filtered_parameters_to_prune.append((module, name))
-        if isinstance(module, nn.Linear) and name == "weight":
-            _filtered_parameters_to_prune.append((module, name))
     return _filtered_parameters_to_prune
 
 
@@ -30,7 +28,7 @@ def apply_pruning(
         pytorch_prune.global_unstructured(
             parameters_to_prune, pruning_method=pytorch_prune.L1Unstructured, amount=amount
         )
-    elif type == "unstructed":
+    elif type == "unstructured":
         for module, name in parameters_to_prune:
             pytorch_prune.l1_unstructured(module, name, amount=amount)
     elif type == "structured":

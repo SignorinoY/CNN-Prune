@@ -29,8 +29,20 @@ class CIFAR10DataModule(LightningDataModule):
         self.save_hyperparameters(logger=False)
 
         # data transformations
-        self.transforms = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        self.train_transforms = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+            ]
+        )
+        self.val_transforms = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+            ]
         )
 
         self.data_train: Optional[Dataset] = None
@@ -58,8 +70,8 @@ class CIFAR10DataModule(LightningDataModule):
 
         # load and split datasets only if not loaded already
         if not self.data_train and not self.data_val and not self.data_test:
-            trainset = CIFAR10(self.hparams.data_dir, train=True, transform=self.transforms)
-            testset = CIFAR10(self.hparams.data_dir, train=False, transform=self.transforms)
+            trainset = CIFAR10(self.hparams.data_dir, train=True, transform=self.train_transforms)
+            testset = CIFAR10(self.hparams.data_dir, train=False, transform=self.val_transforms)
             dataset = ConcatDataset(datasets=[trainset, testset])
             self.data_train, self.data_val, self.data_test = random_split(
                 dataset=dataset,
